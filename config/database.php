@@ -1,14 +1,15 @@
 <?php
 /**
- * Database Connection File
- * Using PDO for secure database operations
+ * Database Connection File - Wasmer Optimized
+ * Using Environment Variables for Secure Connection
  */
 
-// Database configuration
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'taxsafar_db');
+// Database configuration using Wasmer Secrets
+define('DB_HOST', getenv('DB_HOST') ?: 'db.fr-pari1.bengt.wasmernet.com');
+define('DB_PORT', getenv('DB_PORT') ?: '10272');
+define('DB_USER', getenv('DB_USERNAME') ?: '34e861a376d88000d6d6506fe819');
+define('DB_PASS', getenv('DB_PASSWORD') ?: '069e34e8-61a3-77ec-8000-eb256c269db7');
+define('DB_NAME', getenv('DB_DATABASE') ?: 'taxsafar');
 
 $options = [
     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -17,19 +18,13 @@ $options = [
 ];
 
 try {
-    // Connect to MySQL without specifying the database first
-    $pdo = new PDO(
-        'mysql:host=' . DB_HOST . ';charset=utf8mb4',
-        DB_USER,
-        DB_PASS,
-        $options
-    );
+    // Connect using the Wasmer-provided credentials
+    // Note: We include the PORT and the DATABASE name in the DSN
+    $dsn = "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";charset=utf8mb4";
+    
+    $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
 
-    // Create database if it does not exist
-    $pdo->exec("CREATE DATABASE IF NOT EXISTS `" . DB_NAME . "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-    $pdo->exec("USE `" . DB_NAME . "`");
-
-    // Create admins table if missing
+    // Create tables if they don't exist (Wasmer Managed DBs come pre-created, but tables might not)
     $pdo->exec(
         "CREATE TABLE IF NOT EXISTS admins (
             id INT PRIMARY KEY AUTO_INCREMENT,
@@ -40,7 +35,6 @@ try {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
     );
 
-    // Create inquiries table if missing
     $pdo->exec(
         "CREATE TABLE IF NOT EXISTS inquiries (
             id INT PRIMARY KEY AUTO_INCREMENT,
@@ -64,7 +58,9 @@ try {
         $stmt = $pdo->prepare('INSERT INTO admins (name, email, password) VALUES (?, ?, ?)');
         $stmt->execute(['Admin User', 'admin@taxsafar.com', $defaultPassword]);
     }
+
 } catch (PDOException $e) {
+    // If it fails, it will show the specific error in your Wasmer Logs
     die('Database Connection Error: ' . $e->getMessage());
 }
 ?>
