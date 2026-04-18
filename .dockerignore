@@ -1,0 +1,13 @@
+.git
+.gitignore
+*.log
+error_log
+access_log
+.env
+.env.local
+.vscode
+.idea
+node_modules
+vendor
+tmp
+temp
